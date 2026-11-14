@@ -1,6 +1,6 @@
 - insert:
     - id: dsh-memory
-      name: '@local/dsh-memory'
+      name: 'dsh-memory'
       config:
         # Memory home. Empty/absent -> <DSH_HOME>/memories.
         home: ''

@@ -1,4 +1,4 @@
-// Client half of @local/dsh-memory: left-sidebar entry + the DSH-styled 记忆 page.
+// Client half of dsh-memory: left-sidebar entry + the DSH-styled 记忆 page.
 //
 // Visual language follows the bundled DSH desktop design system, not Hermes:
 //   * DELIBERATE DIVERGENCE: the reference panel (spec/hermes-memory-model.md §7) accents with
@@ -20,7 +20,7 @@
 // thrown fetch renders an inline error strip and leaves the rest of the page alive.
 // All user-visible strings come from the locale dicts (Chinese first, English second).
 window.__ModuleLoader__.load({
-  id: '@local/dsh-memory',
+  id: 'dsh-memory',
   factory(require) {
     const React = require('react');
     const h = React.createElement;

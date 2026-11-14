@@ -29,7 +29,7 @@ const ALLOWED_TOKENS = [
 
 test('loader envelope: id, factory(require) and the slots inject', async () => {
   const r = await render();
-  assert.equal(r.id, '@local/dsh-memory');
+  assert.equal(r.id, 'dsh-memory');
   // `r` comes back from a vm context, so its arrays have that realm's prototype; copy before
   // comparing or deepEqual reports "same structure but not reference-equal".
   // `slots` is required. `locale` is declared too so ctx.locale.register() is permitted —

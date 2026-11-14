@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Install (or revert) @local/dsh-memory in the live DSH profile.
+ * Install (or revert) dsh-memory in the live DSH profile.
  *
  *   node dsh-memory/tools/install.mjs                 # dry run: show the plan
  *   node dsh-memory/tools/install.mjs --apply         # patch profile + pnpm install
@@ -19,7 +19,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const pluginRoot = path.resolve(here, "..");
-const PACKAGE_NAME = "@local/dsh-memory";
+const PACKAGE_NAME = "dsh-memory";
 const BACKUP_MARK = ".dsh-memory-backup";
 
 const args = new Set(process.argv.slice(2));

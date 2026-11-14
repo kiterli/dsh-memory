@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Live-HTTP smoke of the host half. Boots @local/dsh-memory's apply() into a real
+ * Live-HTTP smoke of the host half. Boots dsh-memory's apply() into a real
  * node:http server (no DSH, no fake ctx), then exercises the routes over the wire:
  *
  *   node dsh-memory/dev/live-smoke.mjs [--home <dir>] [--port 0]

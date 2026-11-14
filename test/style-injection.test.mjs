@@ -78,7 +78,7 @@ function evaluateFactory(document) {
 
   assert.equal(registrations.length, 1, 'exactly one module registration');
   const entry = registrations[0];
-  assert.equal(entry.id, '@local/dsh-memory');
+  assert.equal(entry.id, 'dsh-memory');
 
   const ReactStub = {
     createElement: (type, props, ...children) => ({ type, props: props || {}, children }),

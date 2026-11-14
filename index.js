@@ -1,5 +1,5 @@
 /**
- * Host half of @local/dsh-memory.
+ * Host half of dsh-memory.
  *
  * Owns the HTTP surface the 记忆 page talks to, and wires the two data layers
  * together: `lib/md.js` (MEMORY.md / USER.md) and `lib/store.js` (the
@@ -17,7 +17,7 @@ import { createReflector } from "./lib/reflection.js";
 import path from "node:path";
 import os from "node:os";
 
-export const name = "@local/dsh-memory";
+export const name = "dsh-memory";
 // `webServer` serves the panel; `tools` registers the memory tools the model can call;
 // `systemPrompt` places the instructions section and the profile context. All three are
 // required for memory to actually work rather than merely be displayed.
