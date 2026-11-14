@@ -14,6 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Node < 22.5 没有稳定的 node:sqlite，且不支持 `node --test` 的 glob 展开，
+        # 因此最低支持 22。
         os: [ubuntu-latest, windows-latest, macos-latest]
         node: [22, 24]
 
@@ -31,24 +33,4 @@ jobs:
           npm --version
 
       - name: Run test suite
-        run: npm test
-
-  # 只跑不需要 node:sqlite 的纯逻辑测试，用于老版本 Node 的兼容性参考
-  test-no-sqlite:
-    name: pure logic (node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [20]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Run tests (sqlite tests skip themselves when unavailable)
         run: npm test
