@@ -1,11 +1,37 @@
 {
-  "name": "@local/dsh-memory",
+  "name": "dsh-memory",
   "version": "0.1.0",
-  "private": true,
+  "description": "本地记忆插件 for DeepSeek Harness：Markdown 双层记忆 + Holographic 事实库，零 npm 依赖，全离线。Local memory plugin for DeepSeek Harness with holographic fact store.",
   "type": "module",
-  "description": "Local memory for DeepSeek Harness: markdown memory files (MEMORY.md / USER.md) plus a holographic fact store, with a 记忆 page in the desktop UI.",
+  "license": "MIT",
+  "author": "kiterli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiterli/dsh-memory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kiterli/dsh-memory/issues"
+  },
+  "homepage": "https://github.com/kiterli/dsh-memory#readme",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "memory",
+    "holographic",
+    "hrr",
+    "vector-search",
+    "local-first",
+    "offline"
+  ],
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
-    "dl-model": "node dl-model.mjs"
+    "test": "node --test \"test/*.test.mjs\"",
+    "test:watch": "node --test --watch \"test/*.test.mjs\"",
+    "dl-model": "node dl-model.mjs",
+    "screenshot": "node dev/screenshot.cjs"
   },
   "exports": {
     ".": "./index.js",
@@ -19,7 +45,9 @@
     "cordis.patch.yml",
     "lib",
     "locale/*.json",
-    "icon.svg"
+    "icon.svg",
+    "LICENSE",
+    "README.md"
   ],
   "dsh": {
     "bundle": {

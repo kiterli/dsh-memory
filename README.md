@@ -1,4 +1,133 @@
-# `@local/dsh-memory` — 本地记忆（Markdown + Holographic）
+# dsh-memory
+
+[![tests](https://github.com/kiterli/dsh-memory/actions/workflows/tests.yml/badge.svg)](https://github.com/kiterli/dsh-memory/actions/workflows/tests.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![node](https://img.shields.io/badge/node-%3E%3D22.5-339933.svg)](https://nodejs.org)
+[![dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](./package.json)
+
+**为 DeepSeek Harness 打造的本地记忆插件** — Markdown 双层记忆 + Holographic 向量事实库。
+
+全离线、零运行时依赖、中文语义检索。
+
+![记忆页面](./docs/screenshot.png)
+
+---
+
+## 它解决什么问题
+
+普通 AI 对话每次都从零开始。你告诉它一次的事，下次还得再说一遍。
+
+这个插件让 DSH 记住三样东西：
+
+| 记住什么 | 例子 |
+|---|---|
+| **事实** | 你的硬件、常用路径、技术栈 |
+| **偏好** | "回复用中文"、"不要分步问" |
+| **经验** | "这个坑踩过，别再这么做" |
+
+关键是它**不需要你特意说"记住"** —— 自动捕获模块会认出「以后都…」「我习惯…」「一律…」这类信号，自己存下来。
+
+## 三层记忆模型
+
+```
+┌─────────────────────────────────────────────┐
+│  Markdown 层    MEMORY.md / USER.md          │  ← 人可读、可手改
+│                 字符预算 2200 / 1375          │
+├─────────────────────────────────────────────┤
+│  Holographic 层  1024 维 HRR 向量             │  ← 跨词边界语义匹配
+│                 每条事实一个向量              │
+├─────────────────────────────────────────────┤
+│  检索层          关键词 / 向量 / HRR 三路      │  ← 精确命中硬优先
+│                 时间衰减加权                  │
+└─────────────────────────────────────────────┘
+```
+
+**为什么需要 HRR 层**：中文检索最大的坑是词边界。事实里写「显存」，你问「显卡内存」——子串匹配必然失败。HRR 用向量相似度跨过这个坑。
+
+**为什么精确命中要硬优先**：早期版本用加权混合（关键词 1.0 / 向量 0.7 / HRR 0.3），结果高分的模糊匹配会挤掉字面精确命中。现在改成精确命中占固定槽位，永不被挤掉。
+
+---
+
+## 快速开始
+
+### 1. 克隆到 DSH 插件目录
+
+```bash
+git clone https://github.com/kiterli/dsh-memory.git
+cd dsh-memory
+```
+
+### 2. 挂进 DSH profile
+
+```bash
+node tools/install.mjs          # 干跑，只打印会改什么
+node tools/install.mjs --apply  # 真正写入
+```
+
+### 3. 重启 DSH
+
+左侧栏会出现「记忆」入口。
+
+### 4. （可选）下载语义检索模型
+
+```bash
+npm run dl-model
+```
+
+不装也能用 —— 会退化成关键词 + HRR 检索，只是少了向量语义这一路。
+
+---
+
+## 怎么用
+
+**平时正常聊天就行。** 该记的东西它自己记。
+
+需要主动干预时，模型有四个工具：
+
+| 工具 | 用途 |
+|---|---|
+| `memory_record` | 存一条事实 |
+| `memory_search` | 检索 |
+| `memory_list` | 列出已有 |
+| `memory_forget` | 删除 |
+
+界面上可以：按分类筛选、调最低信任度、按时间排序、搜索本地会话记录。
+
+---
+
+## 技术特点
+
+| 特点 | 说明 |
+|---|---|
+| **零运行时依赖** | 纯 Node ESM，SQLite 用内置 `node:sqlite` |
+| **全离线** | 不联网、不调 API |
+| **双后端** | SQLite 优先，不可用时自动退化为原子写 JSON |
+| **可回滚** | 每次改动存版本，`fact_versions` 保留历史 |
+| **可量化** | `tools/eval-recall.mjs` 测检索准不准 |
+| **隐私** | 数据只在 `~/.dsh/memories/`，不进仓库 |
+
+## 测试
+
+```bash
+npm test
+```
+
+306 个测试，覆盖存储、检索、衰减、自动捕获等全部模块。CI 在 Linux / Windows / macOS × Node 22 / 24 上跑。
+
+---
+
+## 文档
+
+- [CONTRACT.md](./CONTRACT.md) — 接口契约
+- [CONTRACT.v3.md](./CONTRACT.v3.md) — v3 设计与数据模型
+
+## License
+
+[MIT](./LICENSE)
+
+---
+
+# 以下为详细文档
 
 为 DeepSeek Harness 桌面端打造的**本地、离线**记忆插件：像 Hermes 那样把长期记忆分成两层——
 
