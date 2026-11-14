@@ -48,6 +48,29 @@
 
 ---
 
+## 依赖说明（重要）
+
+**核心功能零依赖。** 代码只用 Node 内置模块（`node:path` / `node:fs` / `node:worker_threads` / `node:crypto` / `node:sqlite` 等），`git clone` 后不装任何东西就能跑：
+
+```bash
+git clone https://github.com/kiterli/dsh-memory.git
+cd dsh-memory
+npm test          # 306 个测试，不需要 npm install
+```
+
+`package.json` 里有两个**可选**依赖，缺了只是能力降级，不会崩：
+
+| 依赖 | 类型 | 缺了会怎样 |
+|---|---|---|
+| `@huggingface/transformers` | dependencies | 语义向量检索自动降级，退化为「关键词 + HRR 全息」两路召回。日志会打印一条 warn，功能不中断。 |
+| `node-llama-cpp` | devDependencies | `npm run dl-model` 无法下载本地推演模型，反思/提炼能力不可用。 |
+
+**要不要装？**
+
+- 只想让记忆能用 → **什么都不用装**
+- 想要最好的中文语义检索 → `npm install`（约 200MB，含 onnxruntime）
+- 还想要本地模型做经验提炼 → `npm install --include=dev && npm run dl-model`
+
 ## 快速开始
 
 ### 1. 克隆到 DSH 插件目录
@@ -70,7 +93,10 @@ node tools/install.mjs --apply  # 真正写入
 
 ### 4. （可选）下载语义检索模型
 
+需要先装开发依赖（模型约 1GB，从 hf-mirror 下载）：
+
 ```bash
+npm install --include=dev
 npm run dl-model
 ```
 

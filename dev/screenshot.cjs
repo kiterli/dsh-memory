@@ -2,7 +2,11 @@
 // 障碍：.pv-frame 的高度被 CSS 固定为 min(calc(100vh - 130px), 900px)，
 // 内容在其内部的滚动容器里，fullPage 截不全。
 // 解法：覆盖这几层的固定高度，展开滚动，再整页截图。
-process.env.PLAYWRIGHT_BROWSERS_PATH = 'C:\\Users\\13264\\AppData\\Local\\ms-playwright';
+//
+// 依赖 playwright-core（不是运行时依赖，只在想重新生成截图时需要）：
+//   npm install -D playwright-core
+//   npx playwright install chromium
+// 浏览器缓存位置用 PLAYWRIGHT_BROWSERS_PATH 指定，默认用 Playwright 自己的约定。
 
 const path = require('node:path');
 const fs = require('node:fs');
@@ -13,7 +17,26 @@ const shot = path.join(root, 'dev', 'preview-snapshot.html');
 const outDir = path.join(root, 'docs');
 fs.mkdirSync(outDir, { recursive: true });
 
-const { chromium } = require('E:\\AI-Tools\\gstack\\node_modules\\playwright-core');
+function loadPlaywright() {
+  const tries = [];
+  if (process.env.PLAYWRIGHT_MODULE) tries.push(process.env.PLAYWRIGHT_MODULE);
+  tries.push('playwright-core', 'playwright');
+  for (const spec of tries) {
+    try {
+      return require(spec);
+    } catch {
+      // 继续试下一个
+    }
+  }
+  console.error('找不到 playwright-core。想重新生成截图请先安装：');
+  console.error('  npm install -D playwright-core');
+  console.error('  npx playwright install chromium');
+  console.error('或用 PLAYWRIGHT_MODULE 指定模块路径。');
+  console.error('（docs/screenshot.png 已经存在，不改样式的话不需要重新生成。）');
+  process.exit(1);
+}
+
+const { chromium } = loadPlaywright();
 
 (async () => {
   const browser = await chromium.launch();

@@ -20,7 +20,7 @@ import {
 } from '../lib/failure.js';
 
 const ACL =
-  'Error: Windows ACL temp root must be outside the workspace: workspace=C:\\Users\\13264; temp=C:\\Users\\13264\\AppData\\Local\\Temp';
+  'Error: Windows ACL temp root must be outside the workspace: workspace=C:\\Users\\example; temp=C:\\Users\\example\\AppData\\Local\\Temp';
 
 /* --------------------------------------------------------------- abort handling */
 

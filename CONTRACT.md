@@ -182,8 +182,8 @@ SessionHit = { id, title, source, updatedAt, snippet, matches }
 
 `GET /api/dsh-memory/sessions` searches DSH's own session store. Keep it tolerant: if the
 store cannot be read, return `{ ok: true, sources: [], sessions: [], note: '...' }` rather
-than an error. Candidate locations: `C:\Users\13264\.dsh\sessions\`,
-`C:\Users\13264\.dsh\dsh-session-archive\`, `C:\Users\13264\.dsh\storages\`.
+than an error. Candidate locations: `<DSH_HOME>\sessions\`,
+`<DSH_HOME>\dsh-session-archive\`, `<DSH_HOME>\storages\`.
 
 ## `client.js` (mem-ui) — the 记忆 page
 
