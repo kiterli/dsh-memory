@@ -386,7 +386,11 @@ test('store (json): writes atomically and recovers from absent/truncated/corrupt
           try { JSON.parse(text); reads += 1; } catch { torn += 1; }
         }
       } catch (err) {
-        if (!err || err.code !== 'ENOENT') throw err;
+        // 原子替换（rename over）在 Windows 上会让并发读者短暂碰到 EPERM/EBUSY,
+        // 而 Linux/macOS 的替换是原子的、看不到这个窗口。两者都只说明"此刻这份
+        // 文件正被替换"，是本次并发读写的正常现象，不是数据损坏，跳过这一轮即可。
+        const transient = err && (err.code === 'ENOENT' || err.code === 'EPERM' || err.code === 'EBUSY');
+        if (!transient) throw err;
       }
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
