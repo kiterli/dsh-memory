@@ -1,0 +1,15 @@
+- insert:
+    - id: dsh-memory
+      name: '@local/dsh-memory'
+      config:
+        # Memory home. Empty/absent -> <DSH_HOME>/memories.
+        home: ''
+        # The assistant's name. Injected as the first line of the memory instructions,
+        # which is what makes it answer to the name and speak as itself.
+        assistantName: 小智
+        # Character budgets for the markdown layers (Hermes parity: 2200 / 1375).
+        agentBudget: 2200
+        userBudget: 1375
+        # Split captured facts out of the markdown automatically when a write
+        # would overflow the budget (mirrors the holographic auto_extract flag).
+        autoExtract: false

@@ -1,0 +1,82 @@
+{
+  "name": "dsh-memory recall eval (hand-written paraphrases)",
+  "builtAt": "2026-11-12T13:30:00.000Z",
+  "note": "Paraphrase rows are the REAL measurement. Each question is phrased the way the user would actually ask, using words that do NOT appear in the fact it should find. Literal rows are auto-derived at run time and only prove substring matching works. Unanswerable rows come from the auto builder.",
+
+  "_why_these_queries": "Written by hand against the 12 facts in the store on 2026-11-12. The point is that the wording differs from the stored text: '显存' vs '显卡内存', '什么时候跑 bat' vs '必须优先跑安装目录里的启动 .bat'. If the retriever only does substring matching these fail — which is exactly what we want to know.",
+
+  "queries": [
+    {
+      "q": "ComfyUI 怎么启动才不会一闪就退",
+      "kind": "paraphrase",
+      "expectIds": ["f303affe4fbfcbe7b", "f019bc2cf4bd7f2ed"],
+      "note": "用户不会说'缺 activate.bat 设置的环境'，只会说'一闪就退'"
+    },
+    {
+      "q": "你叫什么名字",
+      "kind": "paraphrase",
+      "expectIds": ["fb03b0026550d6b19"],
+      "note": "极短问句，没有'助手名'/'小智'这些字面线索"
+    },
+    {
+      "q": "我的显卡和内存是什么配置",
+      "kind": "paraphrase",
+      "expectIds": ["fact-0f2a43b6f8c7"],
+      "note": "原文是'用户硬件：拯救者 R9000P'，问题里没有'拯救者'"
+    },
+    {
+      "q": "装依赖的时候能不能直接 pnpm install",
+      "kind": "paraphrase",
+      "expectIds": ["f61260946f8bc68a8"],
+      "note": "原文讲的是整目录 purge 风险与 corepack 版本，问题用的是'装依赖'"
+    },
+    {
+      "q": "我应该用什么语言跟你说话",
+      "kind": "paraphrase",
+      "expectIds": ["fact-8a2e247c611e"],
+      "note": "原文是'回复用简体中文'，问题里没有'中文'二字"
+    },
+    {
+      "q": "任务多的时候你喜欢一次做完还是分步",
+      "kind": "paraphrase",
+      "expectIds": ["fact-e594b608a1d0"],
+      "note": "原文是'完善所有=一次性做完'，问题改写成了'一次做完还是分步'"
+    },
+    {
+      "q": "画图那个工作流怎么绕开提取步骤",
+      "kind": "paraphrase",
+      "expectIds": ["f6ba543f1d49ac4b4"],
+      "note": "原文是'可绕过「提取」直接读 /api/userdata/workflows'，问题里说'画图''绕开'"
+    },
+    {
+      "q": "OCR 是怎么跑的，要一直开着吗",
+      "kind": "paraphrase",
+      "expectIds": ["f67c0dd453fb8945c"],
+      "note": "原文讲 spawn 进程跑完即退、无常驻服务"
+    },
+    {
+      "q": "这个插件装在哪个目录",
+      "kind": "paraphrase",
+      "expectIds": ["fc322a3edf1a4bbb5", "fb37af13453d67f0c"],
+      "note": "原文是具体路径，问题只问'哪个目录'"
+    },
+    {
+      "q": "comfyui 那个插件改过什么",
+      "kind": "paraphrase",
+      "expectIds": ["fb37af13453d67f0c"],
+      "note": "原文是 fork 与新增 lib/serverctl.js 等"
+    },
+    {
+      "q": "我希望你怎么写代码注释",
+      "kind": "unanswerable",
+      "expectIds": [],
+      "note": "库里没有任何关于注释风格的事实——应该拒答"
+    },
+    {
+      "q": "我平时几点上班",
+      "kind": "unanswerable",
+      "expectIds": [],
+      "note": "库里没有作息信息"
+    }
+  ]
+}

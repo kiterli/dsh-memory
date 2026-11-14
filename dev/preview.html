@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh-memory · 记忆 — standalone preview</title>
+<link rel="stylesheet" href="tokens.css">
+</head>
+<body>
+
+<div class="pv-bar">
+  <span class="pv-brand" id="pv-entry"></span>
+  <span class="pv-title">dsh-memory · 记忆 <span id="pv-reg"></span></span>
+  <span class="pv-spacer"></span>
+  <span class="pv-status" id="pv-status">booting…</span>
+  <button class="pv-btn" id="pv-fail" type="button">模拟接口失败</button>
+  <button class="pv-btn" id="pv-theme" type="button">切换深色</button>
+</div>
+
+<div class="pv-frame" id="pv-root"></div>
+
+<div class="pv-note" id="pv-note">
+  同一份 <code>../client.js</code>，未做任何修改；<code>window.__ModuleLoader__</code> 为桩实现，
+  六个 <code>/api/dsh-memory/*</code> 接口在文件内 mock，无服务器、无 npm 依赖。
+</div>
+
+<!-- ------------------------------------------------------------------ 1. mock data -->
+<script id="mock-data">
+// Every response of GET /overview, GET /builtin, GET /facts, GET /providers, GET /sessions and
+// POST /refresh is mocked here, in-file, with realistic data. Same block is reused by
+// dev/render-preview.mjs for the headless snapshot, so there is a single source of truth.
+(function () {
+  var NOW = Date.now();
+  var MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
+  var DIR = 'C:\\Users\\13264\\Documents\\deepseek-harness\\default-workspace\\dsh-memory\\memory\\';
+  var SNAPSHOT = NOW - 42 * MIN;
+
+  var categoryCount = [
+    { name: '偏好', count: 1 },
+    { name: '流程', count: 1 },
+    { name: '环境', count: 2 },
+    { name: '工具', count: 1 },
+    { name: '项目', count: 1 }
+  ];
+
+  var facts = [
+    {
+      id: 'a1f0c3d9-2b71-4e55-9c8a-0d3f1b7e4a20',
+      content: '用户偏好中文回答：界面文案与文档一律中文优先，英文只作回退。',
+      category: '偏好', tags: ['语言', '沟通'], trust: 0.94, source: 'agent',
+      createdAt: NOW - 26 * DAY, updatedAt: NOW - 2 * HOUR,
+      searchCount: 37, helpfulCount: 12, entities: ['用户', '中文'], hash: '9f2c4ab1'
+    },
+    {
+      id: 'b7d4e812-5c36-4a90-8f21-6ae5c0b39d74',
+      content: '长任务的进度必须写入共享任务板，不能只留在对话里；完成前要留下可复核的证据。',
+      category: '流程', tags: ['协作', '任务板'], trust: 0.81, source: 'agent',
+      createdAt: NOW - 19 * DAY, updatedAt: NOW - 5 * HOUR,
+      searchCount: 18, helpfulCount: 5, entities: ['任务板'], hash: '2ac77e10'
+    },
+    {
+      id: 'c3902f6a-8e14-4d7b-b0c5-71f2a8de4409',
+      content: '这台机器的 shell 是 Windows PowerShell 5.1；含非 ASCII 的文件必须以 UTF-8 带 BOM 落盘，否则会被解码成乱码。',
+      category: '环境', tags: ['windows', '编码', 'powershell'], trust: 0.88, source: 'agent',
+      createdAt: NOW - 15 * DAY, updatedAt: NOW - 90 * MIN,
+      searchCount: 25, helpfulCount: 9, entities: ['PowerShell', 'UTF-8'], hash: '71b0c9f3'
+    },
+    {
+      id: 'd54ab1e7-3f82-4c06-9d13-8b47e2f0a5c1',
+      content: 'DSH 客户端页面必须零 npm 依赖：React.createElement，不用 JSX，不引入打包器。',
+      category: '工具', tags: ['dsh', '前端', '约束'], trust: 0.72, source: 'agent',
+      createdAt: NOW - 9 * DAY, updatedAt: NOW - 26 * HOUR,
+      searchCount: 11, helpfulCount: 3, entities: ['DSH', 'React'], hash: '45de1a8c'
+    },
+    {
+      id: 'e0c6f293-7a41-4b58-8e2d-1c9f5b7a3d68',
+      content: 'Python 解释器命令是 py -3，这台机器上不存在 python 这个命令。',
+      category: '环境', tags: ['python', 'windows'], trust: 0.65, source: 'agent',
+      createdAt: NOW - 6 * DAY, updatedAt: NOW - 3 * DAY,
+      searchCount: 6, helpfulCount: 1, entities: ['Python'], hash: 'aa30f7d2'
+    },
+    {
+      id: 'f8b17d40-9c25-4ea3-a6b8-2d70c4e91f35',
+      content: 'Holographic 事实库落在 memory/holographic.sqlite，快照导出为 JSON 后由界面只读展示。',
+      category: '项目', tags: ['holographic', '存储'], trust: 0.52, source: 'agent',
+      createdAt: NOW - 3 * DAY, updatedAt: NOW - 11 * HOUR,
+      searchCount: 4, helpfulCount: 0, entities: ['Holographic', 'SQLite'], hash: 'c1e59b64'
+    }
+  ];
+
+  var provider = {
+    id: 'holographic',
+    label: 'Holographic',
+    path: DIR + 'holographic.sqlite',
+    backend: 'sqlite-vec',
+    configured: true,
+    available: true,
+    facts: 6, shown: 6, entities: 23, relations: 11, stores: 1,
+    categories: categoryCount,
+    snapshotAt: SNAPSHOT
+  };
+
+  var builtinFiles = [
+    {
+      key: 'agent', label: 'MEMORY.md', fileName: 'MEMORY.md', path: DIR + 'MEMORY.md',
+      exists: true, available: true, chars: 1840, budget: 2200, percent: 83.6,
+      mtime: NOW - 3 * HOUR, overBudget: false,
+      entries: [
+        { index: 0, text: '记住：用户在做 @local/dsh-memory，一个本地记忆插件，界面是 DSH 桌面端风格。' },
+        { index: 1, text: '记忆文件分为 MEMORY.md（agent 记忆）与 USER.md（用户画像）两份，各自有字符预算。' },
+        { index: 2, text: '事实库的事实带有信任度、检索次数与有帮助计数，界面只读展示。' },
+        { index: 3, text: '筛选条件：关键词、分类、最低信任度、结果上限；筛选会重新查询事实库。' },
+        { index: 4, text: '会话搜索在本地会话记录里检索片段，可限定来源并选择排序方式。' },
+        { index: 5, text: '所有页面文案中文优先，英文回退；颜色只用 DSH 设计令牌。' }
+      ]
+    },
+    {
+      // Same state the reference panel is in: USER.md is not on disk yet, so the card shows the
+      // 不可用 badge (spec §4.4) with an empty entry list.
+      key: 'user', label: 'USER.md', fileName: 'USER.md', path: DIR + 'USER.md',
+      exists: false, available: false, chars: 0, budget: 1375, percent: 0,
+      mtime: null, overBudget: false,
+      entries: []
+    }
+  ];
+
+  var sessions = [
+    {
+      id: 's-1042', title: '搭建 dsh-memory 插件骨架', source: 'agent', updatedAt: NOW - 35 * MIN, matches: 7,
+      snippet: '…把 CONTRACT.md 当作唯一接口约定：client.js 只读展示，写入全在 lib/ 里，六个区块顺序不要改…'
+    },
+    {
+      id: 's-1039', title: 'Holographic 事实库快照导出', source: 'agent', updatedAt: NOW - 4 * HOUR, matches: 4,
+      snippet: '…快照 JSON 里 facts.shown 与 facts.total 都保留，界面用 shown 显示、total 作为总量…'
+    },
+    {
+      id: 's-1028', title: 'PowerShell 5.1 编码踩坑', source: 'shell', updatedAt: NOW - 27 * HOUR, matches: 3,
+      snippet: '…中文文件先写 UTF-8 with BOM 再交给 PS 解析，交给浏览器/Node 的仍是纯 UTF-8…'
+    },
+    {
+      id: 's-1015', title: 'DSH 页面预览方案', source: 'user', updatedAt: NOW - 3 * DAY, matches: 2,
+      snippet: '…没有 UMD React，就在 dev/ 里自带一个极小的渲染器，preview.html 必须能直接双击打开…'
+    }
+  ];
+
+  var state = { failFacts: false, failProviders: false };
+
+  function search(text, q) {
+    if (!q) return true;
+    var t = String(text).toLowerCase(), s = String(q).toLowerCase();
+    return t.indexOf(s) >= 0;
+  }
+  function queryOf(url) {
+    var out = {}, at = String(url).indexOf('?');
+    if (at < 0) return out;
+    String(url).slice(at + 1).split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = decodeURIComponent(i < 0 ? pair : pair.slice(0, i));
+      var v = i < 0 ? '' : decodeURIComponent(pair.slice(i + 1).replace(/\+/g, ' '));
+      out[k] = v;
+    });
+    return out;
+  }
+  function routeOf(url) {
+    var p = String(url).split('?')[0];
+    var i = p.indexOf('/api/dsh-memory');
+    return i < 0 ? p : p.slice(i + '/api/dsh-memory'.length);
+  }
+
+  var MOCK = {
+    state: state,
+    calls: [],
+    facts: facts,
+    builtinFiles: builtinFiles,
+    sessions: sessions,
+    provider: provider,
+    reset: function () { state.failFacts = false; state.failProviders = false; this.calls.length = 0; }
+  };
+  window.__DSH_MEMORY_MOCK = MOCK;
+
+  function payload(url, method) {
+    var path = routeOf(url);
+    var q = queryOf(url);
+    if (method === 'POST' && path === '/refresh') return { ok: true, snapshotAt: SNAPSHOT };
+    if (path.indexOf('/facts/') === 0 && /\/helpful$/.test(path)) return { ok: true };
+    if (path === '/overview') {
+      return {
+        ok: true, version: '0.1.0', snapshotAt: SNAPSHOT,
+        builtin: { entries: 6, files: 2, available: true },
+        providers: { enabled: 1, items: [provider] },
+        facts: { total: facts.length, shown: facts.length },
+        budgets: { agentBudget: 2200, userBudget: 1375 }
+      };
+    }
+    if (path === '/builtin') return { ok: true, files: builtinFiles };
+    if (path === '/providers') return { ok: true, providers: [provider] };
+    if (path === '/facts') {
+      var min = parseFloat(q.minTrust || '0');
+      if (isNaN(min)) min = 0;
+      var limit = parseInt(q.limit || '50', 10);
+      if (isNaN(limit) || limit <= 0) limit = 50;
+      var list = facts.filter(function (f) {
+        var hitText = search(f.content, q.q) || search(f.category, q.q) || (f.tags || []).some(function (t) { return search(t, q.q); });
+        var hitCat = !q.category || f.category === q.category;
+        return hitText && hitCat && f.trust >= min;
+      });
+      return {
+        ok: true, total: facts.length, filtered: list.length,
+        categories: categoryCount, facts: list.slice(0, limit)
+      };
+    }
+    if (path === '/sessions') {
+      var hits = sessions.filter(function (s) {
+        var okSrc = !q.source || s.source === q.source;
+        return okSrc && (search(s.title, q.q) || search(s.snippet, q.q));
+      });
+      hits.sort(function (a, b) {
+        return q.sort === 'oldest' ? a.updatedAt - b.updatedAt : b.updatedAt - a.updatedAt;
+      });
+      return { ok: true, sources: ['agent', 'user', 'shell'], sessions: hits };
+    }
+    return { ok: false, error: 'mock: 未知接口 ' + path };
+  }
+
+  window.fetch = function (url, init) {
+    var method = (init && init.method) || 'GET';
+    var path = routeOf(url);
+    var status = 200;
+    var body;
+    if (state.failFacts && path.indexOf('/facts') === 0) {
+      status = 503; body = { ok: false, error: 'mock: 事实库暂时不可用' };
+    } else if (state.failProviders && path === '/providers') {
+      status = 503; body = { ok: false, error: 'mock: 提供方注册表不可读' };
+    } else {
+      body = payload(url, method);
+      if (body && body.ok === false) status = 404;
+    }
+    MOCK.calls.push(method + ' ' + path + ' → ' + status);
+    if (typeof document !== 'undefined' && document.getElementById) refreshStatus();
+    return Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status: status,
+      json: function () { return Promise.resolve(body); }
+    });
+  };
+
+  function refreshStatus() {
+    var el = document.getElementById('pv-status');
+    if (!el) return;
+    var last = MOCK.calls[MOCK.calls.length - 1] || '—';
+    el.textContent = MOCK.calls.length + ' 次请求 · ' + last;
+  }
+  MOCK.refreshStatus = refreshStatus;
+})();
+</script>
+
+<!-- --------------------------------------------------------- 2. module-loader stub -->
+<script id="loader-stub">
+// Minimal stand-in for the DSH web host so the unmodified client.js can boot in a plain file://.
+(function () {
+  var registry = {};
+  window.__ModuleLoader__ = {
+    load: function (entry) {
+      if (!entry || !entry.id || typeof entry.factory !== 'function') throw new Error('bad module entry');
+      registry[entry.id] = entry;
+      window.__DSH_MEMORY_ENTRY = entry;
+    },
+    get: function (id) { return registry[id]; }
+  };
+  // The host provides 'react'; here it is the bundled zero-dependency subset in dev/react-lite.js.
+  window.__ModuleLoader__.require = function (id) {
+    if (id === 'react') return window.__ReactLite;
+    throw new Error('preview host does not provide the module "' + id + '"');
+  };
+})();
+</script>
+
+<script src="react-lite.js"></script>
+<script src="../client.js"></script>
+
+<!-- ------------------------------------------------------------ 3. preview bootstrap -->
+<script id="bootstrap">
+(function () {
+  var entry = window.__DSH_MEMORY_ENTRY;
+  if (!entry) throw new Error('client.js never called __ModuleLoader__.load');
+  var RL = window.__ReactLite;
+  var mod = entry.factory(window.__ModuleLoader__.require);
+
+  // Capture both registrations instead of performing them.
+  var captured = {};
+  var disposers = [];
+  var host = {
+    // styles / locale deliberately absent: the page must degrade on its own
+    // (a <style> element for CSS, the built-in Chinese-first dicts for strings).
+    slots: {
+      inject: function (name, cb) { var d = cb(); disposers.push(d); return d; },
+      register: function (spec, component) {
+        captured[spec.name] = { spec: spec, component: component };
+        return function () {};
+      }
+    },
+    effect: function (fn) { var d = fn(); return function () { if (typeof d === 'function') d(); }; }
+  };
+  mod.apply(host);
+
+  var page = captured['main'] && captured['main'].component;
+  var icon = captured['sidebar.panellist'] && captured['sidebar.panellist'].component;
+  if (!page) throw new Error('the main slot was not registered');
+
+  var reg = captured['sidebar.panellist'];
+  document.getElementById('pv-reg').textContent =
+    reg ? '· panel id=' + reg.spec.id + ' order=' + reg.spec.order + ' label=' + reg.spec.label() : '';
+  if (icon) RL.mount(RL.createElement(icon, { size: 18 }), document.getElementById('pv-entry'));
+
+  RL.mount(RL.createElement(page, null), document.getElementById('pv-root'));
+  window.__DSH_MEMORY_PREVIEW = { host: host, captured: captured, mod: mod };
+
+  // --- chrome: failure injection + theme toggle -------------------------------------------
+  var failBtn = document.getElementById('pv-fail');
+  failBtn.addEventListener('click', function () {
+    var st = window.__DSH_MEMORY_MOCK.state;
+    st.failFacts = !st.failFacts;
+    st.failProviders = st.failFacts;
+    failBtn.className = st.failFacts ? 'pv-btn pv-on' : 'pv-btn';
+    failBtn.textContent = st.failFacts ? '接口失败注入：开' : '模拟接口失败';
+    if (st.failFacts) {
+      // exercise the page's own refresh path, which is what surfaces the inline error strip
+      var b = document.querySelector('.mm-head .mm-btn');
+      if (b) b.click();
+    }
+  });
+
+  var themeBtn = document.getElementById('pv-theme');
+  function setTheme(next) {
+    document.documentElement.setAttribute('data-theme', next);
+    themeBtn.textContent = next === 'dark' ? '切换浅色' : '切换深色';
+    try { localStorage.setItem('dsh-memory-preview-theme', next); } catch (e) { /* file:// */ }
+  }
+  var saved = 'light';
+  try { saved = localStorage.getItem('dsh-memory-preview-theme') || 'light'; } catch (e) { /* file:// */ }
+  setTheme(saved);
+  themeBtn.addEventListener('click', function () {
+    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  setTimeout(function () { window.__DSH_MEMORY_MOCK.refreshStatus(); }, 60);
+})();
+</script>
+
+</body>
+</html>

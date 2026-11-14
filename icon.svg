@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- dsh-memory panel icon: a memory die (chip) glyph on a rounded gradient tile.
+     Hex colours are allowed inside icon artwork. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="dsh-memory">
+  <defs>
+    <linearGradient id="mm-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6b83ff"/>
+      <stop offset="1" stop-color="#4d6bfe"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#mm-bg)"/>
+  <g fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="36" y="36" width="56" height="56" rx="14"/>
+    <rect x="53" y="53" width="22" height="22" rx="6"/>
+    <path d="M53 26v10M75 26v10M53 92v10M75 92v10M26 53h10M26 75h10M92 53h10M92 75h10"/>
+  </g>
+</svg>

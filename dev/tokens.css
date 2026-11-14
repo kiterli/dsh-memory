@@ -1,0 +1,152 @@
+/* dev/tokens.css — plausible stand-ins for the DSH desktop design tokens.
+ *
+ * The real app injects these --dsw-alias-* values from its theme; outside DSH nothing defines
+ * them, so the standalone preview supplies light and dark values for exactly the tokens the
+ * 记忆 page uses (and the --dsw-radius-* steps its corners are cut from).
+ * This file is deliberately ASCII-only. */
+
+:root,
+:root[data-theme="light"] {
+  --dsw-radius-lg: 16px;
+  --dsw-radius-md: 12px;
+  --dsw-radius-sm: 8px;
+  --dsw-radius-xs: 4px;
+
+  --dsw-alias-bg-base: #ffffff;
+  --dsw-alias-bg-layer-1: #f6f7f9;
+  --dsw-alias-bg-layer-2: #ffffff;
+  --dsw-alias-bg-layer-3: #eceef1;
+
+  --dsw-alias-label-primary: #1b1d21;
+  --dsw-alias-label-secondary: #5c6270;
+  --dsw-alias-label-tertiary: #8b909c;
+
+  --dsw-alias-border-l1: #e3e5e9;
+  --dsw-alias-border-l2: #cfd3da;
+
+  --dsw-alias-brand-primary: #4d6bfe;
+  --dsw-alias-state-success-primary: #17936a;
+  --dsw-alias-state-warn-primary: #b06d00;
+  --dsw-alias-state-error-primary: #d64545;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --dsw-radius-lg: 16px;
+  --dsw-radius-md: 12px;
+  --dsw-radius-sm: 8px;
+  --dsw-radius-xs: 4px;
+
+  --dsw-alias-bg-base: #16181d;
+  --dsw-alias-bg-layer-1: #1c1f25;
+  --dsw-alias-bg-layer-2: #22262d;
+  --dsw-alias-bg-layer-3: #2a2f37;
+
+  --dsw-alias-label-primary: #e9eaee;
+  --dsw-alias-label-secondary: #a3a9b7;
+  --dsw-alias-label-tertiary: #767d8c;
+
+  --dsw-alias-border-l1: #2b3038;
+  --dsw-alias-border-l2: #3a4150;
+
+  --dsw-alias-brand-primary: #7089ff;
+  --dsw-alias-state-success-primary: #2fbd85;
+  --dsw-alias-state-warn-primary: #e0a33c;
+  --dsw-alias-state-error-primary: #f2706f;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --dsw-alias-bg-base: #16181d;
+    --dsw-alias-bg-layer-1: #1c1f25;
+    --dsw-alias-bg-layer-2: #22262d;
+    --dsw-alias-bg-layer-3: #2a2f37;
+    --dsw-alias-label-primary: #e9eaee;
+    --dsw-alias-label-secondary: #a3a9b7;
+    --dsw-alias-label-tertiary: #767d8c;
+    --dsw-alias-border-l1: #2b3038;
+    --dsw-alias-border-l2: #3a4150;
+    --dsw-alias-brand-primary: #7089ff;
+    --dsw-alias-state-success-primary: #2fbd85;
+    --dsw-alias-state-warn-primary: #e0a33c;
+    --dsw-alias-state-error-primary: #f2706f;
+  }
+}
+
+/* ---------------------------------------------------------------- preview shell
+ * Only the harness chrome around the page is styled here; the page itself carries its own CSS. */
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary);
+  font: 13px/1.5 system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+.pv-bar {
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.pv-brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 620; }
+.pv-brand svg { color: var(--dsw-alias-brand-primary); }
+.pv-title { font-size: 12.5px; }
+.pv-spacer { flex: 1; }
+.pv-status {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--dsw-alias-label-tertiary);
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pv-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12.5px;
+  height: 30px;
+  padding: 0 12px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm);
+}
+.pv-btn:hover { border-color: var(--dsw-alias-border-l2); }
+.pv-btn:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; }
+.pv-btn.pv-on { border-color: var(--dsw-alias-state-error-primary); color: var(--dsw-alias-state-error-primary); }
+
+/* The app pane the page is designed for: a fixed-height, scrollable region. */
+.pv-frame {
+  width: 100%;
+  max-width: 1180px;
+  height: min(calc(100vh - 130px), 900px);
+  min-height: 420px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-bg-base);
+  overflow: hidden;
+}
+
+.pv-note { width: 100%; max-width: 1180px; font-size: 11.5px; color: var(--dsw-alias-label-tertiary); }

@@ -1,0 +1,33 @@
+# 依赖与构建产物
+node_modules/
+package-lock.json
+
+# 本地模型权重（体积巨大，运行时按需下载）
+.models/
+*.gguf
+*.onnx
+*.safetensors
+
+# 记忆数据（含个人隐私，绝不能提交）
+memories/
+*.db
+*.db-shm
+*.db-wal
+MEMORY.md
+USER.md
+
+# 备份与调试
+*.bak
+*.bak-*
+*.log
+debug.log
+
+# 本地环境
+.env
+.env.*
+!.env.example
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><meta charset="utf-8"><title>dsh-memory 记忆 — rendered snapshot</title>
+<style>
+/* dev/tokens.css — plausible stand-ins for the DSH desktop design tokens.
+ *
+ * The real app injects these --dsw-alias-* values from its theme; outside DSH nothing defines
+ * them, so the standalone preview supplies light and dark values for exactly the tokens the
+ * 记忆 page uses (and the --dsw-radius-* steps its corners are cut from).
+ * This file is deliberately ASCII-only. */
+
+:root,
+:root[data-theme="light"] {
+  --dsw-radius-lg: 16px;
+  --dsw-radius-md: 12px;
+  --dsw-radius-sm: 8px;
+  --dsw-radius-xs: 4px;
+
+  --dsw-alias-bg-base: #ffffff;
+  --dsw-alias-bg-layer-1: #f6f7f9;
+  --dsw-alias-bg-layer-2: #ffffff;
+  --dsw-alias-bg-layer-3: #eceef1;
+
+  --dsw-alias-label-primary: #1b1d21;
+  --dsw-alias-label-secondary: #5c6270;
+  --dsw-alias-label-tertiary: #8b909c;
+
+  --dsw-alias-border-l1: #e3e5e9;
+  --dsw-alias-border-l2: #cfd3da;
+
+  --dsw-alias-brand-primary: #4d6bfe;
+  --dsw-alias-state-success-primary: #17936a;
+  --dsw-alias-state-warn-primary: #b06d00;
+  --dsw-alias-state-error-primary: #d64545;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --dsw-radius-lg: 16px;
+  --dsw-radius-md: 12px;
+  --dsw-radius-sm: 8px;
+  --dsw-radius-xs: 4px;
+
+  --dsw-alias-bg-base: #16181d;
+  --dsw-alias-bg-layer-1: #1c1f25;
+  --dsw-alias-bg-layer-2: #22262d;
+  --dsw-alias-bg-layer-3: #2a2f37;
+
+  --dsw-alias-label-primary: #e9eaee;
+  --dsw-alias-label-secondary: #a3a9b7;
+  --dsw-alias-label-tertiary: #767d8c;
+
+  --dsw-alias-border-l1: #2b3038;
+  --dsw-alias-border-l2: #3a4150;
+
+  --dsw-alias-brand-primary: #7089ff;
+  --dsw-alias-state-success-primary: #2fbd85;
+  --dsw-alias-state-warn-primary: #e0a33c;
+  --dsw-alias-state-error-primary: #f2706f;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --dsw-alias-bg-base: #16181d;
+    --dsw-alias-bg-layer-1: #1c1f25;
+    --dsw-alias-bg-layer-2: #22262d;
+    --dsw-alias-bg-layer-3: #2a2f37;
+    --dsw-alias-label-primary: #e9eaee;
+    --dsw-alias-label-secondary: #a3a9b7;
+    --dsw-alias-label-tertiary: #767d8c;
+    --dsw-alias-border-l1: #2b3038;
+    --dsw-alias-border-l2: #3a4150;
+    --dsw-alias-brand-primary: #7089ff;
+    --dsw-alias-state-success-primary: #2fbd85;
+    --dsw-alias-state-warn-primary: #e0a33c;
+    --dsw-alias-state-error-primary: #f2706f;
+  }
+}
+
+/* ---------------------------------------------------------------- preview shell
+ * Only the harness chrome around the page is styled here; the page itself carries its own CSS. */
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary);
+  font: 13px/1.5 system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+.pv-bar {
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.pv-brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 620; }
+.pv-brand svg { color: var(--dsw-alias-brand-primary); }
+.pv-title { font-size: 12.5px; }
+.pv-spacer { flex: 1; }
+.pv-status {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--dsw-alias-label-tertiary);
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pv-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12.5px;
+  height: 30px;
+  padding: 0 12px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm);
+}
+.pv-btn:hover { border-color: var(--dsw-alias-border-l2); }
+.pv-btn:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; }
+.pv-btn.pv-on { border-color: var(--dsw-alias-state-error-primary); color: var(--dsw-alias-state-error-primary); }
+
+/* The app pane the page is designed for: a fixed-height, scrollable region. */
+.pv-frame {
+  width: 100%;
+  max-width: 1180px;
+  height: min(calc(100vh - 130px), 900px);
+  min-height: 420px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-bg-base);
+  overflow: hidden;
+}
+
+.pv-note { width: 100%; max-width: 1180px; font-size: 11.5px; color: var(--dsw-alias-label-tertiary); }
+
+.mm-view{display:flex;flex-direction:column;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-size:13px;line-height:1.5;}
+.mm-body{flex:1;min-height:0;overflow:auto;padding:4px 28px 34px;scrollbar-width:thin;scrollbar-color:var(--dsw-alias-border-l2) transparent;}
+.mm-body::-webkit-scrollbar{width:8px;height:8px;}
+.mm-body::-webkit-scrollbar-thumb{background:var(--dsw-alias-border-l2);border-radius:99px;border:2px solid transparent;background-clip:content-box;}
+.mm-body::-webkit-scrollbar-track{background:transparent;}
+@keyframes mm-spin{to{transform:rotate(360deg)}}
+@keyframes mm-fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes mm-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+.mm-head{display:flex;align-items:center;gap:14px;padding:22px 28px 16px;}
+.mm-logo{width:38px;height:38px;flex:none;border-radius:var(--dsw-radius-sm,10px);border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);display:flex;align-items:center;justify-content:center;color:var(--dsw-alias-brand-primary);}
+.mm-htxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.mm-tline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.mm-title{font-size:17px;font-weight:640;letter-spacing:.01em;line-height:1.25;}
+.mm-sub{font-size:12px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-acts{display:flex;gap:8px;align-items:center;flex:none;}
+.mm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:12px;animation:mm-fade .2s ease;}
+.mm-stat{background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-md,12px);padding:14px 16px;min-width:0;}
+.mm-stat .mm-slabel{font-size:11.5px;color:var(--dsw-alias-label-secondary);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-stat .mm-svalue{font-size:22px;font-weight:640;line-height:1.35;margin-top:4px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-stat .mm-ssub{font-size:11.5px;color:var(--dsw-alias-label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-main{max-width:1180px;margin:0 auto;width:100%;}
+.mm-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start;}
+.mm-col{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.mm-col:first-child .mm-panel:first-child,.mm-col:last-child .mm-panel:first-child{margin-top:0;}
+.mm-panel{background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-lg,14px);padding:0;margin-top:14px;min-width:0;display:flex;flex-direction:column;}
+.mm-panel-head{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--dsw-alias-border-l1);flex-wrap:wrap;}
+.mm-panel-head h3{font-size:13px;font-weight:650;color:var(--dsw-alias-label-primary);letter-spacing:.01em;margin:0;flex:1;min-width:0;display:flex;align-items:center;gap:8px;}
+.mm-panel-body{padding:15px 18px;min-width:0;}
+.mm-aside{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dsw-alias-label-tertiary);white-space:nowrap;}
+.mm-picon{width:24px;height:24px;flex:none;border-radius:var(--dsw-radius-sm,8px);background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-brand-primary);}
+.mm-note{font-size:12px;color:var(--dsw-alias-label-secondary);line-height:1.6;background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-left:2px solid var(--dsw-alias-brand-primary);border-radius:var(--dsw-radius-sm,8px);padding:9px 12px;margin-top:10px;}
+.mm-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px 14px;align-items:end;}
+.mm-field{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.mm-field.mm-grow{grid-column:1 / -1;}
+.mm-flabel{font-size:11.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.02em;}
+.mm-search{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:var(--dsw-radius-sm,8px);background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);min-width:0;}
+.mm-search:focus-within{border-color:var(--dsw-alias-brand-primary);}
+.mm-search svg{flex:none;color:var(--dsw-alias-label-tertiary);}
+.mm-input{flex:1;min-width:0;border:0;background:transparent;color:var(--dsw-alias-label-primary);font-size:12.5px;outline:0;font-family:inherit;}
+.mm-input::placeholder{color:var(--dsw-alias-label-tertiary);}
+.mm-selectwrap{position:relative;display:inline-flex;align-items:center;}
+.mm-selectwrap svg{position:absolute;right:9px;pointer-events:none;color:var(--dsw-alias-label-tertiary);}
+.mm-select{height:32px;min-width:130px;appearance:none;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);border-radius:var(--dsw-radius-sm,8px);padding:0 28px 0 11px;font-size:12.5px;cursor:pointer;font-family:inherit;}
+.mm-select:hover{border-color:var(--dsw-alias-border-l2);}
+.mm-btn{appearance:none;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);border-radius:var(--dsw-radius-sm,8px);height:32px;padding:0 13px;font-size:12.5px;font-weight:520;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:opacity .18s,border-color .18s,background .18s;}
+.mm-btn:hover{border-color:var(--dsw-alias-border-l2);}
+.mm-btn:disabled{opacity:.45;cursor:default;}
+.mm-btn.mm-primary{background:var(--dsw-alias-state-success-primary);border-color:transparent;color:var(--dsw-alias-bg-base);font-weight:600;}
+.mm-btn.mm-primary:hover{opacity:.88;}
+.mm-btn.mm-ghost{background:transparent;border-color:transparent;color:var(--dsw-alias-label-secondary);height:28px;padding:0 10px;}
+.mm-btn.mm-ghost:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);}
+.mm-btn:focus-visible,.mm-select:focus-visible,.mm-input:focus-visible,.mm-chipbtn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;}
+.mm-spin{animation:mm-spin .8s linear infinite;}
+.mm-chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:1.5px 9px 1.5px 7px;font-size:11.5px;font-weight:520;line-height:16px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.mm-chip.mm-ok{color:var(--dsw-alias-state-success-primary);}
+.mm-chip.mm-warn{color:var(--dsw-alias-state-warn-primary);}
+.mm-chip.mm-err{color:var(--dsw-alias-state-error-primary);}
+.mm-chip.mm-brand{color:var(--dsw-alias-brand-primary);}
+.mm-chip.mm-plain{padding:1.5px 9px;}
+.mm-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;display:inline-block;}
+.mm-chipbtn{appearance:none;font-family:inherit;cursor:pointer;transition:border-color .18s,color .18s;}
+.mm-chipbtn:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);}
+.mm-code{font-family:ui-monospace,"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:11.5px;background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-xs,4px);padding:2px 7px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:inline-block;vertical-align:middle;}
+.mm-files{display:flex;flex-direction:column;gap:12px;}
+.mm-file{background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-md,12px);padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:11px;}
+.mm-fhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mm-fname{font-size:14px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-fmeta{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dsw-alias-label-secondary);}
+.mm-frow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.mm-bar{height:6px;border-radius:99px;background:var(--dsw-alias-bg-layer-3,var(--dsw-alias-bg-layer-2));overflow:hidden;}
+.mm-bar > i{display:block;height:100%;border-radius:99px;background:var(--dsw-alias-state-success-primary);}
+.mm-bar.mm-warn > i{background:var(--dsw-alias-state-warn-primary);}
+.mm-bar.mm-err > i{background:var(--dsw-alias-state-error-primary);}
+.mm-entries{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;padding-right:2px;scrollbar-width:thin;}
+.mm-entry{display:flex;gap:9px;align-items:flex-start;background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-sm,8px);padding:8px 10px;}
+.mm-idx{flex:none;font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:11px;color:var(--dsw-alias-label-tertiary);background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-xs,4px);padding:1px 6px;line-height:16px;}
+.mm-etext{font-size:12.5px;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word;min-width:0;}
+.mm-prov{background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-md,12px);padding:14px 16px;margin-bottom:12px;min-width:0;}
+.mm-phead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mm-pname{font-size:14px;font-weight:620;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.mm-counters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 6px;}
+.mm-counter{background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-sm,8px);padding:9px 12px;min-width:0;}
+.mm-cval{font-size:17px;font-weight:640;font-variant-numeric:tabular-nums;line-height:1.2;}
+.mm-clabel{font-size:11px;color:var(--dsw-alias-label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.mm-ov{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 18px;margin-top:8px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1);animation:mm-fade .2s ease;}
+.mm-ovrow{display:flex;gap:10px;align-items:baseline;padding:3px 0;min-width:0;}
+.mm-ovk{flex:none;min-width:66px;font-size:12px;color:var(--dsw-alias-label-tertiary);}
+.mm-ovv{font-size:12px;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.mm-facts{display:flex;flex-direction:column;gap:10px;margin-top:6px;padding-top:14px;border-top:1px solid var(--dsw-alias-border-l1);}
+.mm-fact{background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-md,12px);padding:13px 15px;min-width:0;}
+.mm-fhead2{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+.mm-fid{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:11.5px;color:var(--dsw-alias-label-tertiary);}
+.mm-fcontent{font-size:13px;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word;line-height:1.62;}
+.mm-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mm-times{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--dsw-alias-label-tertiary);}
+.mm-sessions{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.mm-sess{background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-md,12px);padding:11px 14px;min-width:0;}
+.mm-shead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+.mm-stitle{font-size:13px;font-weight:560;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.mm-ssnip{font-size:12px;color:var(--dsw-alias-label-secondary);line-height:1.6;word-break:break-word;}
+.mm-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:34px 20px;color:var(--dsw-alias-label-secondary);text-align:center;}
+.mm-empty svg{color:var(--dsw-alias-label-tertiary);}
+.mm-empty .mm-e1{font-size:13px;font-weight:560;color:var(--dsw-alias-label-primary);}
+.mm-load{display:flex;align-items:center;gap:8px;color:var(--dsw-alias-label-secondary);font-size:12.5px;padding:16px 2px;}
+.mm-spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--dsw-alias-border-l2);border-top-color:var(--dsw-alias-brand-primary);animation:mm-spin .7s linear infinite;flex:none;}
+.mm-skel{height:13px;border-radius:var(--dsw-radius-xs,4px);background:var(--dsw-alias-bg-layer-2);animation:mm-pulse 1.2s ease infinite;margin:8px 0;}
+.mm-err{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--dsw-alias-state-error-primary);border-left-width:3px;background:var(--dsw-alias-bg-layer-1);border-radius:var(--dsw-radius-sm,8px);padding:9px 12px;margin:8px 0 2px;animation:mm-fade .2s ease;}
+.mm-err svg{flex:none;color:var(--dsw-alias-state-error-primary);margin-top:2px;}
+.mm-err .mm-etitle{font-size:12.5px;font-weight:600;}
+.mm-err .mm-elist{font-size:12px;color:var(--dsw-alias-label-secondary);line-height:1.6;word-break:break-word;}
+.mm-mono{font-variant-numeric:tabular-nums;}
+.snap{padding:16px;}
+</style></head>
+<body><div class="snap"><div class="pv-frame">
+<div class="mm-view"><header class="mm-head"><span class="mm-logo"><svg viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><rect x="3.2" y="3.2" width="9.6" height="9.6" rx="2.2"><rect x="6.3" y="6.3" width="3.4" height="3.4" rx="1"><path d="M6.3 1.6v1.6M9.7 1.6v1.6M6.3 12.8v1.6M9.7 12.8v1.6M1.6 6.3h1.6M1.6 9.7h1.6M12.8 6.3h1.6M12.8 9.7h1.6" stroke-linecap="round"></svg></span><span class="mm-htxt"><span class="mm-tline"><span class="mm-title">记忆</span><span class="mm-chip mm-brand"><i class="mm-dot"></i>Holographic</span><span class="mm-chip mm-plain">只读</span></span><span class="mm-sub">本地记忆：Markdown 记忆文件 + Holographic 事实库</span></span><span class="mm-acts"><button type="button" class="mm-btn" title="刷新"><span><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M13.2 8a5.2 5.2 0 1 1-1.5-3.65" stroke-linecap="round"><path d="M13.4 1.8v3h-3" stroke-linecap="round" stroke-linejoin="round"></svg></span>刷新</button></span></header><div class="mm-body"><div class="mm-main"><div style="margin-top:4px;"><div class="mm-stats"><div class="mm-stat"><div class="mm-slabel">内置条目</div><div class="mm-svalue">6</div><div class="mm-ssub">MEMORY.md + USER.md</div></div><div class="mm-stat"><div class="mm-slabel">启用的记忆提供方</div><div class="mm-svalue">1</div><div class="mm-ssub">Holographic</div></div><div class="mm-stat"><div class="mm-slabel">Holographic 事实</div><div class="mm-svalue">6</div><div class="mm-ssub">6 显示</div></div><div class="mm-stat"><div class="mm-slabel">快照更新时间</div><div class="mm-svalue">2026/11/7 18:07:47</div><div class="mm-ssub">v0.1.0</div></div></div></div><div class="mm-cols"><div class="mm-col"><section class="mm-panel"><div class="mm-panel-head"><h3>记忆筛选</h3></div><div class="mm-panel-body"><div class="mm-filters"><div class="mm-field mm-grow"><span class="mm-flabel">内容、事实或标签...</span><div class="mm-search"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><circle cx="7" cy="7" r="4.4"><path d="M10.4 10.4 13.2 13.2" stroke-linecap="round"></svg><input class="mm-input" type="search" placeholder="内容、事实或标签..." value=""></div></div><div class="mm-field"><span class="mm-flabel">分类</span><span class="mm-selectwrap"><select class="mm-select" value="" aria-label="分类"><option value="" selected>全部分类</option><option value="偏好">偏好 (1)</option><option value="流程">流程 (1)</option><option value="环境">环境 (2)</option><option value="工具">工具 (1)</option><option value="项目">项目 (1)</option></select><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M3.5 6 8 10.5 12.5 6" stroke-linecap="round" stroke-linejoin="round"></svg></span></div><div class="mm-field"><span class="mm-flabel">最低信任度</span><span class="mm-selectwrap"><select class="mm-select" value="0" aria-label="最低信任度"><option value="0" selected>0</option><option value="0.3">0.3</option><option value="0.5">0.5</option><option value="0.75">0.75</option></select><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M3.5 6 8 10.5 12.5 6" stroke-linecap="round" stroke-linejoin="round"></svg></span></div><div class="mm-field"><span class="mm-flabel">结果上限</span><span class="mm-selectwrap"><select class="mm-select" value="50" aria-label="结果上限"><option value="50" selected>50</option><option value="100">100</option><option value="500">500</option></select><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M3.5 6 8 10.5 12.5 6" stroke-linecap="round" stroke-linejoin="round"></svg></span></div><button type="button" class="mm-btn mm-primary"><span><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M2.8 8.5 6 11.7l7.2-7.4" stroke-linecap="round" stroke-linejoin="round"></svg></span>应用筛选 / 刷新</button></div><div class="mm-note">筛选会重新查询事实库，并同步更新下方的提供方列表。</div></div></section><section class="mm-panel"><div class="mm-panel-head"><h3>内置记忆</h3><span class="mm-aside">2 个文件</span></div><div class="mm-panel-body"><div class="mm-files"><div class="mm-file"><div class="mm-fhead"><span class="mm-fname">MEMORY.md</span><span class="mm-chip mm-plain">MEMORY.md</span><span class="mm-chip mm-ok"><i class="mm-dot"></i>可用</span></div><div class="mm-fmeta"><div class="mm-frow"><span>字符用量 1,840 / 2,200 字符</span><span class="mm-chip mm-plain mm-mono">已用 83%</span><span class="mm-chip mm-plain">6 条条目</span></div><div>修改时间 2026/11/7 15:49:47</div><div class="mm-bar mm-warn"><i style="width:83.6%;"></i></div><div><span class="mm-code" title="C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\MEMORY.md">C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\MEMORY.md</span></div></div><div class="mm-entries"><div class="mm-entry"><span class="mm-idx">#1</span><span class="mm-etext">记住：用户在做 @local/dsh-memory，一个本地记忆插件，界面是 DSH 桌面端风格。</span></div><div class="mm-entry"><span class="mm-idx">#2</span><span class="mm-etext">记忆文件分为 MEMORY.md（agent 记忆）与 USER.md（用户画像）两份，各自有字符预算。</span></div><div class="mm-entry"><span class="mm-idx">#3</span><span class="mm-etext">事实库的事实带有信任度、检索次数与有帮助计数，界面只读展示。</span></div><div class="mm-entry"><span class="mm-idx">#4</span><span class="mm-etext">筛选条件：关键词、分类、最低信任度、结果上限；筛选会重新查询事实库。</span></div><div class="mm-entry"><span class="mm-idx">#5</span><span class="mm-etext">会话搜索在本地会话记录里检索片段，可限定来源并选择排序方式。</span></div><div class="mm-entry"><span class="mm-idx">#6</span><span class="mm-etext">所有页面文案中文优先，英文回退；颜色只用 DSH 设计令牌。</span></div></div></div><div class="mm-file"><div class="mm-fhead"><span class="mm-fname">USER.md</span><span class="mm-chip mm-plain">USER.md</span><span class="mm-chip mm-err"><i class="mm-dot"></i>不可用</span></div><div class="mm-fmeta"><div class="mm-frow"><span>字符用量 0 / 1,375 字符</span><span class="mm-chip mm-plain mm-mono">已用 0%</span><span class="mm-chip mm-plain">0 条条目</span></div><div>未修改</div><div class="mm-bar mm-ok"><i style="width:0%;"></i></div><div><span class="mm-code" title="C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\USER.md">C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\USER.md</span></div></div><div class="mm-empty"><svg viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M2 5.4c0-.7.6-1.3 1.3-1.3h2.4l1.3 1.6h5.3c.7 0 1.3.6 1.3 1.3v4.6c0 .7-.6 1.3-1.3 1.3H3.3c-.7 0-1.3-.6-1.3-1.3V5.4Z" stroke-linejoin="round"></svg><div class="mm-e1">这个记忆文件还没有条目。</div></div></div></div></div></section></div><div class="mm-col"><section class="mm-panel"><div class="mm-panel-head"><h3>已配置的记忆提供方</h3><span class="mm-aside"><span>共 6 条</span></span></div><div class="mm-panel-body"><div class="mm-prov"><div class="mm-phead"><span class="mm-pname">Holographic</span><span class="mm-chip mm-ok"><i class="mm-dot"></i>已配置</span><span class="mm-chip mm-ok"><i class="mm-dot"></i>可用</span></div><div><span class="mm-code" title="C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\holographic.sqlite">C:\Users\13264\Documents\deepseek-harness\default-workspace\dsh-memory\memory\holographic.sqlite</span></div><div class="mm-counters"><div class="mm-counter"><div class="mm-cval">6</div><div class="mm-clabel">事实</div></div><div class="mm-counter"><div class="mm-cval">6</div><div class="mm-clabel">显示</div></div><div class="mm-counter"><div class="mm-cval">23</div><div class="mm-clabel">实体</div></div><div class="mm-counter"><div class="mm-cval">1</div><div class="mm-clabel">记忆库</div></div></div><div class="mm-frow"><button type="button" class="mm-btn mm-ghost">收起概览</button></div><div class="mm-ov"><div class="mm-ovrow"><span class="mm-ovk">后端</span><span class="mm-ovv">sqlite-vec</span></div><div class="mm-ovrow"><span class="mm-ovk">关系</span><span class="mm-ovv">11</span></div><div class="mm-ovrow"><span class="mm-ovk">快照</span><span class="mm-ovv">2026/11/7 18:07:47</span></div><div class="mm-ovrow"><span class="mm-ovk">分类</span><span class="mm-ovv" title="偏好, 流程, 环境, 工具, 项目">偏好 · 流程 · 环境 · 工具 · 项目</span></div></div></div><div class="mm-facts"><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #a1f0c3d9</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>偏好</span><span class="mm-chip mm-ok mm-plain"><i class="mm-dot"></i>信任度 0.940</span><span class="mm-chip mm-plain">检索到 37x</span><button type="button" class="mm-chip mm-chipbtn mm-plain mm-ok" title="有帮助 12x">有帮助 12x</button></div><div class="mm-fcontent">用户偏好中文回答：界面文案与文档一律中文优先，英文只作回退。</div><div class="mm-tags"><span class="mm-chip mm-plain">#语言</span><span class="mm-chip mm-plain">#沟通</span></div><div class="mm-times"><span>更新时间 2026/11/7 16:49:47</span><span>创建时间 2026/10/12 18:49:47</span></div></article><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #b7d4e812</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>流程</span><span class="mm-chip mm-ok mm-plain"><i class="mm-dot"></i>信任度 0.810</span><span class="mm-chip mm-plain">检索到 18x</span><button type="button" class="mm-chip mm-chipbtn mm-plain mm-ok" title="有帮助 5x">有帮助 5x</button></div><div class="mm-fcontent">长任务的进度必须写入共享任务板，不能只留在对话里；完成前要留下可复核的证据。</div><div class="mm-tags"><span class="mm-chip mm-plain">#协作</span><span class="mm-chip mm-plain">#任务板</span></div><div class="mm-times"><span>更新时间 2026/11/7 13:49:47</span><span>创建时间 2026/10/19 18:49:47</span></div></article><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #c3902f6a</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>环境</span><span class="mm-chip mm-ok mm-plain"><i class="mm-dot"></i>信任度 0.880</span><span class="mm-chip mm-plain">检索到 25x</span><button type="button" class="mm-chip mm-chipbtn mm-plain mm-ok" title="有帮助 9x">有帮助 9x</button></div><div class="mm-fcontent">这台机器的 shell 是 Windows PowerShell 5.1；含非 ASCII 的文件必须以 UTF-8 带 BOM 落盘，否则会被解码成乱码。</div><div class="mm-tags"><span class="mm-chip mm-plain">#windows</span><span class="mm-chip mm-plain">#编码</span><span class="mm-chip mm-plain">#powershell</span></div><div class="mm-times"><span>更新时间 2026/11/7 17:19:47</span><span>创建时间 2026/10/23 18:49:47</span></div></article><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #d54ab1e7</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>工具</span><span class="mm-chip mm-ok mm-plain"><i class="mm-dot"></i>信任度 0.720</span><span class="mm-chip mm-plain">检索到 11x</span><button type="button" class="mm-chip mm-chipbtn mm-plain mm-ok" title="有帮助 3x">有帮助 3x</button></div><div class="mm-fcontent">DSH 客户端页面必须零 npm 依赖：React.createElement，不用 JSX，不引入打包器。</div><div class="mm-tags"><span class="mm-chip mm-plain">#dsh</span><span class="mm-chip mm-plain">#前端</span><span class="mm-chip mm-plain">#约束</span></div><div class="mm-times"><span>更新时间 2026/11/6 16:49:47</span><span>创建时间 2026/10/29 18:49:47</span></div></article><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #e0c6f293</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>环境</span><span class="mm-chip mm-ok mm-plain"><i class="mm-dot"></i>信任度 0.650</span><span class="mm-chip mm-plain">检索到 6x</span><button type="button" class="mm-chip mm-chipbtn mm-plain mm-ok" title="有帮助 1x">有帮助 1x</button></div><div class="mm-fcontent">Python 解释器命令是 py -3，这台机器上不存在 python 这个命令。</div><div class="mm-tags"><span class="mm-chip mm-plain">#python</span><span class="mm-chip mm-plain">#windows</span></div><div class="mm-times"><span>更新时间 2026/11/4 18:49:47</span><span>创建时间 2026/11/1 18:49:47</span></div></article><article class="mm-fact"><div class="mm-fhead2"><span class="mm-fid">事实 #f8b17d40</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>项目</span><span class="mm-chip mm-plain">信任度 0.520</span><span class="mm-chip mm-plain">检索到 4x</span><button type="button" class="mm-chip mm-chipbtn mm-plain" title="有帮助 0x">有帮助 0x</button></div><div class="mm-fcontent">Holographic 事实库落在 memory/holographic.sqlite，快照导出为 JSON 后由界面只读展示。</div><div class="mm-tags"><span class="mm-chip mm-plain">#holographic</span><span class="mm-chip mm-plain">#存储</span></div><div class="mm-times"><span>更新时间 2026/11/7 07:49:47</span><span>创建时间 2026/11/4 18:49:47</span></div></article></div></div></section><section class="mm-panel"><div class="mm-panel-head"><h3>会话搜索</h3></div><div class="mm-panel-body"><div class="mm-filters"><div class="mm-field mm-grow"><span class="mm-flabel">搜索</span><div class="mm-search"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><circle cx="7" cy="7" r="4.4"><path d="M10.4 10.4 13.2 13.2" stroke-linecap="round"></svg><input class="mm-input" type="search" placeholder="搜索会话内容..." value=""></div></div><div class="mm-field"><span class="mm-flabel">来源</span><span class="mm-selectwrap"><select class="mm-select" value="" aria-label="来源"><option value="" selected>全部来源</option><option value="agent">agent</option><option value="user">user</option><option value="shell">shell</option></select><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M3.5 6 8 10.5 12.5 6" stroke-linecap="round" stroke-linejoin="round"></svg></span></div><div class="mm-field"><span class="mm-flabel">排序方式</span><span class="mm-selectwrap"><select class="mm-select" value="recent" aria-label="排序方式"><option value="recent" selected>最新优先</option><option value="oldest">最早优先</option></select><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><path d="M3.5 6 8 10.5 12.5 6" stroke-linecap="round" stroke-linejoin="round"></svg></span></div><button type="button" class="mm-btn"><span><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden><circle cx="7" cy="7" r="4.4"><path d="M10.4 10.4 13.2 13.2" stroke-linecap="round"></svg></span>搜索会话</button></div><div class="mm-note">在 DSH 的本地会话记录中检索相关片段。</div><div class="mm-sessions"><div class="mm-sess"><div class="mm-shead"><span class="mm-stitle" title="搭建 dsh-memory 插件骨架">搭建 dsh-memory 插件骨架</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>agent</span><span class="mm-chip mm-plain">7 处匹配</span><span class="mm-aside">更新于 2026/11/7 18:14:47</span></div><div class="mm-ssnip">…把 CONTRACT.md 当作唯一接口约定：client.js 只读展示，写入全在 lib/ 里，六个区块顺序不要改…</div></div><div class="mm-sess"><div class="mm-shead"><span class="mm-stitle" title="Holographic 事实库快照导出">Holographic 事实库快照导出</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>agent</span><span class="mm-chip mm-plain">4 处匹配</span><span class="mm-aside">更新于 2026/11/7 14:49:47</span></div><div class="mm-ssnip">…快照 JSON 里 facts.shown 与 facts.total 都保留，界面用 shown 显示、total 作为总量…</div></div><div class="mm-sess"><div class="mm-shead"><span class="mm-stitle" title="PowerShell 5.1 编码踩坑">PowerShell 5.1 编码踩坑</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>shell</span><span class="mm-chip mm-plain">3 处匹配</span><span class="mm-aside">更新于 2026/11/6 15:49:47</span></div><div class="mm-ssnip">…中文文件先写 UTF-8 with BOM 再交给 PS 解析，交给浏览器/Node 的仍是纯 UTF-8…</div></div><div class="mm-sess"><div class="mm-shead"><span class="mm-stitle" title="DSH 页面预览方案">DSH 页面预览方案</span><span class="mm-chip mm-brand mm-plain"><i class="mm-dot"></i>user</span><span class="mm-chip mm-plain">2 处匹配</span><span class="mm-aside">更新于 2026/11/4 18:49:47</span></div><div class="mm-ssnip">…没有 UMD React，就在 dev/ 里自带一个极小的渲染器，preview.html 必须能直接双击打开…</div></div></div></div></section></div></div></div></div></div>
+</div></div></body></html>
